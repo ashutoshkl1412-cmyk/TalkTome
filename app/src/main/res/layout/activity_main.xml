@@ -10,16 +10,16 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
-        android:padding="30dp"
+        android:padding="25dp"
         android:visibility="visible">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Talk Tome Login"
-            android:textSize="28sp"
+            android:textSize="34sp"
             android:textStyle="bold"
-            android:textColor="#333333"
+            android:textColor="#000000"
             android:layout_marginBottom="40dp"/>
 
         <RadioGroup
@@ -33,12 +33,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Mobile SMS"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#333333"
                 android:checked="true"/>
             <RadioButton
                 android:id="@+id/rbGmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Gmail ID"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#333333"
                 android:layout_marginStart="20dp"/>
         </RadioGroup>
 
@@ -47,17 +53,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Enter Mobile Number"
-            android:layout_marginTop="20dp"
+            android:textColorHint="#555555"
+            android:textSize="20sp"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:layout_marginTop="25dp"
             android:inputType="phone"
             android:background="#FFFFFF"
-            android:padding="15dp"/>
+            android:padding="20dp"
+            android:elevation="4dp"/>
 
         <Button
             android:id="@+id/btnSendOTP"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:text="Send Verification Code"
-            android:layout_marginTop="15dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp"
             android:backgroundTint="#2196F3"/>
 
         <LinearLayout
@@ -67,26 +80,32 @@
             android:orientation="vertical"
             android:visibility="gone"
             android:gravity="center"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="30dp">
 
             <EditText
                 android:id="@+id/etOtp"
-                android:layout_width="200dp"
+                android:layout_width="250dp"
                 android:layout_height="wrap_content"
                 android:hint="Enter 4-Digit Code"
+                android:textColorHint="#555555"
                 android:inputType="number"
                 android:maxLength="4"
                 android:gravity="center"
-                android:textSize="22sp"
-                android:letterSpacing="0.3"/>
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:letterSpacing="0.2"/>
 
             <Button
                 android:id="@+id/btnVerifyOTP"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Verify &amp; Login"
+                android:textSize="20sp"
+                android:textStyle="bold"
                 android:backgroundTint="#4CAF50"
-                android:layout_marginTop="10dp"/>
+                android:layout_marginTop="15dp"
+                android:paddingHorizontal="30dp"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -104,63 +123,80 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="15dp">
+            android:layout_marginBottom="20dp">
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Talk Tome"
-                android:textSize="24sp"
+                android:textSize="30sp"
                 android:textStyle="bold"
-                android:textColor="#333333"/>
+                android:textColor="#000000"/>
             <ImageButton
                 android:id="@+id/btnAbout"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@android:drawable/ic_menu_info_details"
-                android:background="?attr/selectableItemBackgroundBorderless"/>
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="fitCenter"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="20dp"
+            android:padding="5dp">
+
+            <Spinner
+                android:id="@+id/spinnerSource"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:theme="@style/Theme.AppCompat.Light"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="➔"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:layout_marginHorizontal="10dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerTarget"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:theme="@style/Theme.AppCompat.Light"/>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="15dp">
-            <Spinner
-                android:id="@+id/spinnerSource"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="➔"
-                android:textSize="20sp"
-                android:layout_marginHorizontal="10dp"/>
-            <Spinner
-                android:id="@+id/spinnerTarget"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:gravity="center_vertical">
             <ImageButton
                 android:id="@+id/btnMic"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:src="@android:drawable/ic_btn_speak_now"
-                android:backgroundTint="#FFFFFF"/>
+                android:backgroundTint="#FFFFFF"
+                android:scaleType="fitCenter"/>
+
             <EditText
                 android:id="@+id/etInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Type or Speak here..."
-                android:padding="10dp"/>
+                android:hint="Type here..."
+                android:textColorHint="#555555"
+                android:textSize="22sp"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:padding="15dp"/>
         </LinearLayout>
 
         <TextView
@@ -168,7 +204,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Ready"
-            android:textSize="12sp"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:textColor="#FF5722"
             android:gravity="center"
             android:visibility="gone"/>
@@ -176,37 +213,81 @@
         <Button
             android:id="@+id/btnTranslate"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="65dp"
             android:text="Translate Now"
-            android:layout_marginTop="10dp"/>
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginTop="15dp"
+            android:backgroundTint="#2196F3"/>
 
         <TextView
             android:id="@+id/tvResult"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="120dp"
             android:background="#EFEFEF"
-            android:text="Translation will appear here..."
+            android:text="Translation..."
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
             android:gravity="center"
-            android:padding="10dp"
-            android:layout_marginTop="15dp"/>
+            android:padding="15dp"
+            android:layout_marginTop="20dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:layout_marginTop="10dp">
-            <Button android:id="@+id/btnSpeakResult" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Listen"/>
-            <Button android:id="@+id/btnCopy" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Copy" android:layout_marginStart="5dp" android:backgroundTint="#777777"/>
-            <Button android:id="@+id/btnShare" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Share" android:layout_marginStart="5dp" android:backgroundTint="#777777"/>
+            android:layout_marginTop="15dp">
+            <Button
+                android:id="@+id/btnSpeakResult"
+                android:layout_width="wrap_content"
+                android:layout_height="55dp"
+                android:text="Listen"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+            <Button
+                android:id="@+id/btnCopy"
+                android:layout_width="wrap_content"
+                android:layout_height="55dp"
+                android:text="Copy"
+                android:layout_marginStart="10dp"
+                android:backgroundTint="#555555"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+            <Button
+                android:id="@+id/btnShare"
+                android:layout_width="wrap_content"
+                android:layout_height="55dp"
+                android:text="Share"
+                android:layout_marginStart="10dp"
+                android:backgroundTint="#555555"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp">
-            <Button android:id="@+id/btnInstagram" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Instagram" android:backgroundTint="#E1306C"/>
-            <View android:layout_width="10dp" android:layout_height="match_parent"/>
-            <Button android:id="@+id/btnFacebook" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Facebook" android:backgroundTint="#1877F2"/>
+            <Button
+                android:id="@+id/btnInstagram"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="55dp"
+                android:text="Instagram"
+                android:backgroundTint="#E1306C"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+            <View android:layout_width="15dp" android:layout_height="match_parent"/>
+            <Button
+                android:id="@+id/btnFacebook"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="55dp"
+                android:text="Facebook"
+                android:backgroundTint="#1877F2"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
         </LinearLayout>
 
         <Button
@@ -214,7 +295,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Logout"
-            android:layout_marginTop="20dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="30dp"
             android:backgroundTint="#D32F2F"/>
     </LinearLayout>
 </FrameLayout>

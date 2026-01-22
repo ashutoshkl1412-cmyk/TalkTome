@@ -1,5 +1,6 @@
 package com.example.talktome
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -12,6 +13,7 @@ import android.speech.tts.TextToSpeech
 import android.text.InputType
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.mlkit.common.model.DownloadConditions
@@ -25,23 +27,15 @@ import org.json.JSONObject
 import java.util.*
 import kotlin.concurrent.thread
 
+// Suppress warnings for simple projects
+@SuppressLint("SetTextI18n", "CommitPrefEdits")
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
-    // ==========================================
-    // 1. CONFIGURATION AREA (FILL THESE LATER)
-    // ==========================================
-    val SMS_DAILY_LIMIT = 3
+    private val smsDailyLimit = 3
+    private val updateJsonUrl = "https://raw.githubusercontent.com/ashutoshkl1412-cmyk/TalkTome/main/update.json"
+    private val formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSe-5IM2.../formResponse"
+    private val formFieldId = "entry.2053569083"
 
-    // LINK 1: Your GitHub Update File (Raw Link)
-    val UPDATE_JSON_URL = "https://raw.githubusercontent.com/YourGitHubUser/YourRepo/main/update.json"
-
-    // LINK 2: Your Google Form Tracker Link (replace 'viewform' with 'formResponse')
-    val FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse"
-    val FORM_FIELD_ID = "entry.123456789"
-
-    // ==========================================
-    // 2. VARIABLES
-    // ==========================================
     lateinit var layoutLogin: View
     lateinit var layoutMainApp: View
     lateinit var layoutOtpEntry: View
@@ -60,7 +54,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     var translator: Translator? = null
     var generatedOTP: String = ""
 
-    // Language Codes
     val languageCodeMap = mapOf(
         "English" to TranslateLanguage.ENGLISH,
         "Hindi" to TranslateLanguage.HINDI,
@@ -68,40 +61,34 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         "Marathi" to TranslateLanguage.MARATHI
     )
 
-    // TTS Locales
-    val ttsLocaleMap = mapOf(
-        "English" to Locale.ENGLISH,
-        "Hindi" to Locale("hi", "IN"),
-        "Bengali" to Locale("bn", "IN"),
-        "Marathi" to Locale("mr", "IN")
-    )
     val languageNames = languageCodeMap.keys.toList()
+
+    private val micLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val text = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.get(0)
+            etInput.setText(text)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Init Data & Tools
         sharedPreferences = getSharedPreferences("TalkTomeData", Context.MODE_PRIVATE)
         tts = TextToSpeech(this, this)
         initViews()
 
-        // Init Spinners
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, languageNames)
         spinnerSource.adapter = adapter
         spinnerTarget.adapter = adapter
         spinnerSource.setSelection(languageNames.indexOf("English"))
         spinnerTarget.setSelection(languageNames.indexOf("Hindi"))
 
-        // CHECK 1: Auto-Login
         if (sharedPreferences.getBoolean("is_logged_in", false)) {
             showMainScreen()
         }
 
-        // CHECK 2: Auto-Update
         checkForUpdates()
-
-        // --- AUTHENTICATION LISTENERS ---
 
         findViewById<RadioGroup>(R.id.radioGroupAuth).setOnCheckedChangeListener { _, id ->
             if (id == R.id.rbMobile) {
@@ -117,18 +104,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         findViewById<Button>(R.id.btnSendOTP).setOnClickListener { handleSendOTP() }
         findViewById<Button>(R.id.btnVerifyOTP).setOnClickListener { verifyOTP() }
+
         findViewById<Button>(R.id.btnLogout).setOnClickListener {
             sharedPreferences.edit().clear().apply()
             finish(); startActivity(intent)
         }
 
-        // --- APP FEATURE LISTENERS ---
-
-        // About Developer Button
         findViewById<ImageButton>(R.id.btnAbout).setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("About Developer")
-                .setMessage("Developed by Ashutosh kaushal\n\nVersion: 1.0\n\nThank you for using Talk Tome!")
+                .setMessage("Developed by Ashutosh\n\nVersion: 1.0\n\nThank you for using Talk Tome!")
                 .setPositiveButton("OK", null)
                 .show()
         }
@@ -143,12 +128,18 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         findViewById<ImageButton>(R.id.btnMic).setOnClickListener {
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            try { startActivityForResult(intent, 100) } catch (e: Exception) {}
+            try { micLauncher.launch(intent) } catch (e: Exception) {}
         }
 
         findViewById<Button>(R.id.btnSpeakResult).setOnClickListener {
             val tLang = spinnerTarget.selectedItem.toString()
-            tts.language = ttsLocaleMap[tLang] ?: Locale.US
+            val localeCode = when(tLang) {
+                "Hindi" -> "hi-IN"
+                "Bengali" -> "bn-IN"
+                "Marathi" -> "mr-IN"
+                else -> "en-US"
+            }
+            tts.language = Locale.forLanguageTag(localeCode)
             tts.speak(tvResult.text.toString(), TextToSpeech.QUEUE_FLUSH, null, "")
         }
 
@@ -158,18 +149,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
 
         findViewById<Button>(R.id.btnShare).setOnClickListener {
-            startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
-                type="text/plain"; putExtra(Intent.EXTRA_TEXT, tvResult.text)
-            }, "Share"))
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type="text/plain"
+                putExtra(Intent.EXTRA_TEXT, tvResult.text.toString())
+            }
+            startActivity(Intent.createChooser(intent, "Share via"))
         }
 
         findViewById<Button>(R.id.btnInstagram).setOnClickListener { openUrl("https://instagram.com") }
         findViewById<Button>(R.id.btnFacebook).setOnClickListener { openUrl("https://facebook.com") }
     }
-
-    // ==========================================
-    // 3. LOGIC FUNCTIONS
-    // ==========================================
 
     private fun handleSendOTP() {
         val input = etLoginInput.text.toString().trim()
@@ -177,10 +166,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         if (rbMobile.isChecked) {
             val usage = sharedPreferences.getInt("sms_usage", 0)
-            if (usage >= SMS_DAILY_LIMIT) {
+            if (usage >= smsDailyLimit) {
                 AlertDialog.Builder(this)
                     .setTitle("Limit Reached")
-                    .setMessage("Mobile limit reached. Please use Gmail.")
+                    .setMessage("Sorry, daily mobile limit reached. Please use Gmail.")
                     .setPositiveButton("OK") { d, _ -> rbGmail.isChecked = true; d.dismiss() }
                     .show()
             } else {
@@ -194,15 +183,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 generatedOTP = (1000..9999).random().toString()
                 Toast.makeText(this, "Gmail Sent: $generatedOTP", Toast.LENGTH_LONG).show()
                 layoutOtpEntry.visibility = View.VISIBLE
-            } else Toast.makeText(this, "Invalid Gmail", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Invalid Gmail", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     private fun verifyOTP() {
         if (etOtp.text.toString() == generatedOTP) {
-            // Success!
             sharedPreferences.edit().putBoolean("is_logged_in", true).apply()
-            trackUserLogin(etLoginInput.text.toString()) // Track user
+            trackUserLogin(etLoginInput.text.toString())
             showMainScreen()
         } else Toast.makeText(this, "Wrong OTP", Toast.LENGTH_SHORT).show()
     }
@@ -218,7 +208,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         val conditions = DownloadConditions.Builder().requireWifi().build()
         tvStatus.visibility = View.VISIBLE
-        tvStatus.text = "Checking model..."
+        tvStatus.text = "Checking offline model..."
 
         translator!!.downloadModelIfNeeded(conditions)
             .addOnSuccessListener {
@@ -229,7 +219,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 }
             }
             .addOnFailureListener {
-                tvStatus.text = "Need Internet for 1st download."
+                tvStatus.text = "Error: Need internet for first-time setup."
             }
     }
 
@@ -237,15 +227,25 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         thread {
             try {
                 val client = OkHttpClient()
-                val request = Request.Builder().url(UPDATE_JSON_URL).build()
+                val request = Request.Builder().url(updateJsonUrl).build()
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
                     val jsonObject = JSONObject(response.body?.string() ?: "")
-                    if (jsonObject.getInt("versionCode") > packageManager.getPackageInfo(packageName, 0).versionCode) {
+                    val latestVer = jsonObject.getInt("versionCode")
+
+                    val pInfo = packageManager.getPackageInfo(packageName, 0)
+                    val currentVer = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                        pInfo.longVersionCode.toInt()
+                    } else {
+                        @Suppress("DEPRECATION")
+                        pInfo.versionCode
+                    }
+
+                    if (latestVer > currentVer) {
                         runOnUiThread {
                             AlertDialog.Builder(this)
-                                .setTitle("Update Available")
-                                .setMessage("New version ready.")
+                                .setTitle("Update Available!")
+                                .setMessage("A new version is ready.")
                                 .setPositiveButton("Update") { _, _ -> openUrl(jsonObject.getString("url")) }
                                 .setNegativeButton("Later", null)
                                 .show()
@@ -259,13 +259,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun trackUserLogin(userData: String) {
         thread {
             try {
-                val fullUrl = "$https://docs.google.com/forms/d/e/1FAIpQLSe-5lM2ULld-JR7qVRb4_1GtVPWvOehZmnI84Yc1jw7N-uXcw/formResponse?usp=pp_url&entry.2053569083=testFORM_URL?$FORMentry.2053569083_FIELD_ID=$userData"
-                OkHttpClient().newCall(Request.Builder().url(fullUrl).build()).execute()
-            } catch (e: Exception) {}
+                val fullUrl = "$formUrl?$formFieldId=$userData"
+                val client = OkHttpClient()
+                val request = Request.Builder().url(fullUrl).build()
+                client.newCall(request).execute()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
-    // Helpers
     private fun initViews() {
         layoutLogin = findViewById(R.id.layoutLogin)
         layoutMainApp = findViewById(R.id.layoutMainApp)
@@ -284,10 +287,5 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun showMainScreen() { layoutLogin.visibility = View.GONE; layoutMainApp.visibility = View.VISIBLE }
     private fun openUrl(url: String) { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 100 && resultCode == RESULT_OK)
-            etInput.setText(data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.get(0))
-    }
     override fun onInit(status: Int) {}
 }
